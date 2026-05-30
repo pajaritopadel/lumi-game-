@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Crea con Lumi">
+<title>Crea con Lumi!</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;text-transform:uppercase}
+:root{--bg:#FFF0FA;--card:#fff;--shadow:0 4px 24px rgba(0,0,0,0.13)}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height:100vh;min-height:-webkit-fill-available;overflow-x:hidden;-webkit-font-smoothing:antialiased;touch-action:manipulation}
+button{cursor:pointer;border:none;outline:none;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation;text-transform:uppercase}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center}
+.screen.active{display:flex}
+.top-bar{width:100%;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,0.09);position:sticky;top:0;z-index:10}
+.top-title{font-size:24px;font-weight:900;color:#333}
+.btn-back{background:none;font-size:40px;padding:4px 8px}
+.btn-music{background:#FF6FC8;border-radius:50%;width:50px;height:50px;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);flex-shrink:0}
+.stars-bar{font-size:24px;font-weight:900;color:#FFD93D}
+.lumi-wrap{display:flex;flex-direction:column;align-items:center;margin:8px 0}
+.lumi{width:150px;height:150px}
+.lumi.bounce{animation:bounce .5s}
+.lumi.shake{animation:shake .4s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+.bubble{background:#fff;border:4px solid #FF6FC8;border-radius:22px;padding:10px 18px;max-width:360px;text-align:center;font-size:19px;font-weight:800;color:#333;margin-top:8px;position:relative;box-shadow:var(--shadow);line-height:1.4}
+.bubble::before{content:'';position:absolute;top:-15px;left:50%;transform:translateX(-50%);border:7px solid transparent;border-bottom-color:#FF6FC8}
+
+/* HOME */
+#home{background:linear-gradient(160deg,#ffe0f7 0%,#fff0fa 100%)}
+.home-title{font-size:38px;font-weight:900;color:#333;margin:12px 0 4px;text-align:center}
+.worlds-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:14px 18px;width:100%;max-width:800px}
+.world-btn{background:var(--card);border-radius:24px;padding:22px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:var(--shadow);border:4px solid transparent;font-size:19px;font-weight:900;color:#333;transition:transform .2s;text-align:center}
+.world-btn:active{transform:scale(.94)}
+.world-btn .ico{font-size:58px;line-height:1}
+.badge{font-size:11px;border-radius:20px;padding:3px 10px;font-weight:900;margin-top:2px}
+.badge-free{background:#d4f8e8;color:#1a7a4a}
+.badge-goal{background:#ffe0b2;color:#b75000}
+
+/* COLORA */
+#colora-screen{background:#fff9f0}
+.colora-area{width:100%;max-width:700px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.drawing-canvas{border-radius:18px;box-shadow:var(--shadow);background:#fff;touch-action:none;cursor:crosshair}
+.color-palette{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:8px}
+.color-swatch{width:52px;height:52px;border-radius:50%;border:4px solid transparent;transition:transform .15s;box-shadow:0 2px 8px rgba(0,0,0,0.18)}
+.color-swatch.active{border-color:#333;transform:scale(1.2)}
+.color-swatch:active{transform:scale(1.1)}
+.colora-controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.ctrl-btn{border-radius:14px;padding:11px 18px;font-size:16px;font-weight:900;box-shadow:var(--shadow)}
+
+/* SUONA */
+#suona-screen{background:#f0f4ff}
+.piano-area{width:100%;max-width:700px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.piano-keys{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:6px;width:100%;-webkit-overflow-scrolling:touch}
+.piano-key{min-width:66px;width:66px;height:100px;border-radius:14px;font-size:19px;font-weight:900;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.2);transition:transform .1s;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:10px;gap:4px;flex-shrink:0}
+.piano-key:active{transform:scale(.93) translateY(3px)}
+.note-lbl{font-size:13px;font-weight:900}
+.animal-btns,.instr-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.animal-key,.instr-key{width:82px;height:82px;border-radius:18px;font-size:46px;box-shadow:var(--shadow);background:#fff;transition:transform .1s;display:flex;align-items:center;justify-content:center}
+.animal-key:active,.instr-key:active{transform:scale(.9)}
+.piano-section{font-size:17px;font-weight:900;color:#555;margin:2px 0}
+
+/* GRAFIA LETTERE / NUMERI */
+#grafia-screen{background:#fffbe6}
+.grafia-area{width:100%;max-width:700px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.grafia-top{display:flex;align-items:center;gap:14px;background:#fff;border-radius:18px;padding:12px 18px;box-shadow:var(--shadow);width:100%;justify-content:center}
+.grafia-example{font-size:100px;font-weight:900;color:#FFD93D;line-height:1;font-family:'Arial Black',sans-serif}
+.grafia-arrow{font-size:36px}
+.grafia-canvas{border-radius:18px;box-shadow:var(--shadow);background:#fff;touch-action:none;cursor:crosshair;border:4px dashed #FFD93D}
+.grafia-nav{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.nav-btn{border-radius:14px;padding:12px 22px;font-size:17px;font-weight:900;box-shadow:var(--shadow)}
+.level-badge{font-size:15px;font-weight:900;border-radius:12px;padding:6px 16px;color:#333}
+
+/* SCRIVI PAROLA */
+#parola-screen{background:#f0faff}
+.parola-area{width:100%;max-width:760px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.parola-info{display:flex;align-items:center;justify-content:space-between;width:100%;background:#fff;border-radius:18px;padding:12px 18px;box-shadow:var(--shadow)}
+.parola-counter{font-size:17px;font-weight:900;color:#888}
+.parola-level-badge{font-size:14px;font-weight:900;border-radius:12px;padding:5px 14px;color:#333}
+.parola-display{font-size:44px;font-weight:900;color:#4D96FF;text-align:center;background:#fff;border-radius:18px;padding:14px 20px;box-shadow:var(--shadow);width:100%;letter-spacing:6px}
+.parola-canvas-wrap{width:100%;background:#fff;border-radius:18px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;gap:8px}
+.parola-canvas-label{font-size:15px;font-weight:900;color:#aaa}
+.parola-canvas{border-radius:14px;background:#f8f8ff;touch-action:none;cursor:crosshair;border:4px dashed #4D96FF;width:100%}
+.parola-nav{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* CELEBRATION */
+.celebration{position:fixed;top:0;left:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);z-index:100;flex-direction:column}
+.celebration.show{display:flex}
+.cel-box{background:#fff;border-radius:28px;padding:28px 44px;text-align:center;box-shadow:0 10px 50px rgba(0,0,0,0.22)}
+.cel-stars{font-size:60px;letter-spacing:6px}
+.cel-msg{font-size:28px;font-weight:900;color:#333;margin:8px 0 4px}
+.cel-sub{font-size:18px;color:#888;margin-top:4px}
+.cel-btn{background:#FF6FC8;border-radius:18px;padding:14px 36px;font-size:22px;font-weight:900;color:#fff;margin-top:12px;box-shadow:0 4px 16px rgba(255,111,200,0.4)}
+.confetti-c{position:fixed;pointer-events:none;top:0;left:0;width:100%;height:100%;z-index:99}
+
+@media(min-width:768px){
+  .lumi{width:170px;height:170px}
+  .bubble{font-size:21px}
+  .world-btn .ico{font-size:66px}
+  .parola-display{font-size:52px}
+}
+@media(min-width:1024px){
+  .worlds-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="top-bar">
+    <div class="top-title">🦄 CREA CON LUMI!</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn-music" id="btn-music" onclick="toggleMusic()">🎵</button>
+      <div class="stars-bar">⭐<span id="total-stars">0</span></div>
+    </div>
+  </div>
+  <div class="lumi-wrap" style="margin-top:12px">
+    <div class="lumi" id="lumi-home"></div>
+    <div class="bubble" id="bubble-home">CIAO! SONO LUMI! 🦄<br>SCEGLI UN MONDO MAGICO!</div>
+  </div>
+  <div class="worlds-grid">
+    <button class="world-btn" onclick="openWorld('colora')" style="border-color:#FF6B6B">
+      <span class="ico">🎨</span>COLORA LIBERO!
+      <span class="badge badge-free">🌈 MONDO LIBERO</span>
+    </button>
+    <button class="world-btn" onclick="openWorld('suona')" style="border-color:#4D96FF">
+      <span class="ico">🎵</span>SUONA LIBERO!
+      <span class="badge badge-free">🌈 MONDO LIBERO</span>
+    </button>
+    <button class="world-btn" onclick="openWorld('parola')" style="border-color:#6BCB77">
+      <span class="ico">✍️</span>SCRIVI LA PAROLA!
+      <span class="badge badge-goal">🎯 OBIETTIVO</span>
+    </button>
+    <button class="world-btn" onclick="openWorld('grafia-lettere')" style="border-color:#FFD93D">
+      <span class="ico">✏️</span>SCRIVI LE LETTERE!
+      <span class="badge badge-goal">🎯 OBIETTIVO</span>
+    </button>
+    <button class="world-btn" onclick="openWorld('grafia-numeri')" style="border-color:#A855F7">
+      <span class="ico">🔢</span>SCRIVI I NUMERI!
+      <span class="badge badge-goal">🎯 OBIETTIVO</span>
+    </button>
+  </div>
+</div>
+
+<!-- COLORA -->
+<div id="colora-screen" class="screen">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goHome()">⬅️</button>
+    <div class="top-title">🎨 COLORA LIBERO!</div>
+    <button class="btn-music" id="btn-music2" onclick="toggleMusic()">🎵</button>
+  </div>
+  <div class="lumi-wrap">
+    <div class="lumi" id="lumi-colora"></div>
+    <div class="bubble" id="bubble-colora">SCEGLI UN COLORE E DISEGNA! 🎨</div>
+  </div>
+  <div class="colora-area">
+    <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
+    <div class="color-palette" id="color-palette"></div>
+    <div class="colora-controls">
+      <button class="ctrl-btn" style="background:#FFD93D;color:#333" onclick="clearCanvas()">🗑️ CANCELLA</button>
+      <button class="ctrl-btn" style="background:#6BCB77;color:#fff" onclick="setBrushSize(14)">🖌️ GRANDE</button>
+      <button class="ctrl-btn" style="background:#4D96FF;color:#fff" onclick="setBrushSize(5)">✏️ PICCOLO</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUONA -->
+<div id="suona-screen" class="screen">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goHome()">⬅️</button>
+    <div class="top-title">🎵 SUONA LIBERO!</div>
+    <div style="width:50px"></div>
+  </div>
+  <div class="lumi-wrap">
+    <div class="lumi" id="lumi-suona"></div>
+    <div class="bubble" id="bubble-suona">TOCCA I TASTI E CREA LA TUA MUSICA! 🎵</div>
+  </div>
+  <div class="piano-area">
+    <div class="piano-section">🎹 LA MIA PIANOLA</div>
+    <div class="piano-keys" id="piano-keys"></div>
+    <div class="piano-section" style="margin-top:6px">🐾 GLI ANIMALI CANTANO!</div>
+    <div class="animal-btns" id="animal-btns"></div>
+    <div class="piano-section" style="margin-top:6px">🥁 GLI STRUMENTI</div>
+    <div class="instr-btns" id="instr-btns"></div>
+  </div>
+</div>
+
+<!-- SCRIVI LA PAROLA -->
+<div id="parola-screen" class="screen">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goHome()">⬅️</button>
+    <div class="top-title">✍️ SCRIVI LA PAROLA!</div>
+    <div class="stars-bar">⭐<span id="parola-stars">0</span></div>
+  </div>
+  <div class="lumi-wrap">
+    <div class="lumi" id="lumi-parola"></div>
+    <div class="bubble" id="bubble-parola">SCRIVI LA PAROLA CON IL DITO! ✍️</div>
+  </div>
+  <div class="parola-area">
+    <div class="parola-info">
+      <div class="parola-counter" id="parola-counter">PAROLA 1 DI 29</div>
+      <div class="parola-level-badge" id="parola-level-badge">LIVELLO 1 — CON GUIDA</div>
+    </div>
+    <div class="parola-display" id="parola-display">CIAO</div>
+    <div class="parola-canvas-wrap">
+      <div class="parola-canvas-label" id="parola-canvas-label">SCRIVI QUI SOPRA LA PAROLA TRATTEGGIATA</div>
+      <canvas id="parola-canvas" class="parola-canvas"></canvas>
+    </div>
+    <div class="parola-nav">
+      <button class="nav-btn" style="background:#FF6B6B;color:#fff" onclick="parolaBack()">⬅️ INDIETRO</button>
+      <button class="nav-btn" style="background:#6BCB77;color:#fff" onclick="parolaClear()">🗑️ CANCELLA</button>
+      <button class="nav-btn" style="background:#4D96FF;color:#fff" onclick="parolaNext()">AVANTI ➡️</button>
+    </div>
+  </div>
+</div>
+
+<!-- GRAFIA LETTERE / NUMERI -->
+<div id="grafia-screen" class="screen">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goHome()">⬅️</button>
+    <div class="top-title" id="grafia-title">✏️ SCRIVI LE LETTERE!</div>
+    <div class="stars-bar">⭐<span id="grafia-stars">0</span></div>
+  </div>
+  <div class="lumi-wrap">
+    <div class="lumi" id="lumi-grafia"></div>
+    <div class="bubble" id="bubble-grafia">SCRIVI LA LETTERA CON IL DITO! ✏️</div>
+  </div>
+  <div class="grafia-area">
+    <div class="level-badge" id="grafia-level-badge" style="background:#FFD93D">LIVELLO 1 — CON GUIDA ✏️</div>
+    <div class="grafia-top">
+      <div class="grafia-example" id="grafia-example">A</div>
+      <div class="grafia-arrow">👉</div>
+      <canvas id="grafia-canvas" class="grafia-canvas"></canvas>
+    </div>
+    <div class="grafia-nav">
+      <button class="nav-btn" style="background:#FF6B6B;color:#fff" onclick="grafiaBack()">⬅️ INDIETRO</button>
+      <button class="nav-btn" style="background:#6BCB77;color:#fff" onclick="grafiaClear()">🗑️ CANCELLA</button>
+      <button class="nav-btn" style="background:#4D96FF;color:#fff" onclick="grafiaNext()">AVANTI ➡️</button>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="celebration" id="celebration">
+  <canvas class="confetti-c" id="confetti-c"></canvas>
+  <div class="cel-box">
+    <div class="cel-stars" id="cel-stars">⭐⭐⭐</div>
+    <div class="cel-msg" id="cel-msg">BRAVISSIMO!</div>
+    <div class="cel-sub" id="cel-sub"></div>
+    <button class="cel-btn" onclick="closeCelebration()">CONTINUA! ➡️</button>
+  </div>
+</div>
+
+<script>
+// ── LUMI SVG ──────────────────────────────────────────────
+const LSVG=`<svg viewBox="0 0 120 130" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="60,2 54,28 66,28" fill="#FFD93D" stroke="#FFB800" stroke-width="1"/>
+  <line x1="60" y1="6" x2="60" y2="26" stroke="#FFB800" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <ellipse cx="30" cy="42" rx="11" ry="14" fill="#FF6FC8" transform="rotate(-15,30,42)"/>
+  <ellipse cx="30" cy="42" rx="6" ry="9" fill="#FFB3DA" transform="rotate(-15,30,42)"/>
+  <ellipse cx="90" cy="42" rx="11" ry="14" fill="#FF6FC8" transform="rotate(15,90,42)"/>
+  <ellipse cx="90" cy="42" rx="6" ry="9" fill="#FFB3DA" transform="rotate(15,90,42)"/>
+  <ellipse cx="60" cy="62" rx="36" ry="34" fill="#fff" stroke="#FF6FC8" stroke-width="2.5"/>
+  <ellipse cx="25" cy="55" rx="10" ry="18" fill="#A855F7" opacity=".7"/>
+  <ellipse cx="20" cy="62" rx="8" ry="14" fill="#FF6B6B" opacity=".7"/>
+  <ellipse cx="46" cy="56" rx="7" ry="8" fill="#6B3FA0"/>
+  <ellipse cx="74" cy="56" rx="7" ry="8" fill="#6B3FA0"/>
+  <circle cx="48" cy="54" r="2.5" fill="#fff"/>
+  <circle cx="76" cy="54" r="2.5" fill="#fff"/>
+  <ellipse cx="60" cy="68" rx="5" ry="3.5" fill="#FF6FC8"/>
+  <path d="M48 76 Q60 86 72 76" stroke="#6B3FA0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <circle cx="38" cy="70" r="7" fill="#FFB3DA" opacity=".6"/>
+  <circle cx="82" cy="70" r="7" fill="#FFB3DA" opacity=".6"/>
+  <text x="34" y="73" font-size="8" fill="#FF6FC8">✦</text>
+  <text x="78" y="73" font-size="8" fill="#FF6FC8">✦</text>
+  <ellipse cx="60" cy="108" rx="28" ry="22" fill="#FF6FC8"/>
+  <ellipse cx="60" cy="108" rx="18" ry="15" fill="#FFB3DA"/>
+  <line x1="88" y1="90" x2="108" y2="70" stroke="#FFD93D" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="108,62 104,70 112,70" fill="#FFD93D"/>
+</svg>`;
+document.querySelectorAll('.lumi').forEach(el=>el.innerHTML=LSVG);
+
+// ── AUDIO ──────────────────────────────────────────────────
+let actx=null,musicOn=true,bgT=null;
+function gCtx(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();return actx;}
+function tone(f,type,start,dur,vol=0.3){
+  const ctx=gCtx(),o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);o.type=type;
+  o.frequency.setValueAtTime(f,ctx.currentTime+start);
+  g.gain.setValueAtTime(vol,ctx.currentTime+start);
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+start+dur);
+  o.start(ctx.currentTime+start);o.stop(ctx.currentTime+start+dur+0.05);
+}
+function soundCorrect(){
+  [[523,0],[659,0.1],[784,0.2],[1047,0.32]].forEach(([f,t])=>tone(f,'sine',t,0.16,0.25));
+  for(let i=0;i<16;i++){const ctx=gCtx(),b=ctx.createBuffer(1,ctx.sampleRate*.04,ctx.sampleRate),d=b.getChannelData(0);for(let j=0;j<d.length;j++)d[j]=(Math.random()*2-1)*.5;const s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=b;s.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.28,ctx.currentTime+i*.055);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.055+.06);s.start(ctx.currentTime+i*.055);}
+}
+function soundKey(freq){tone(freq,'sine',0,.35,.22);}
+function soundDrum(type){
+  const ctx=gCtx();
+  if(type==='kick'){const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(150,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);g.gain.setValueAtTime(1,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);o.start();o.stop(ctx.currentTime+0.35);}
+  else if(type==='snare'){const b=ctx.createBuffer(1,ctx.sampleRate*.15,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=b;s.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.5,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.15);s.start();}
+  else{const b=ctx.createBuffer(1,ctx.sampleRate*.08,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=ctx.createBufferSource(),g=ctx.createGain(),fil=ctx.createBiquadFilter();fil.type='highpass';fil.frequency.value=8000;s.buffer=b;s.connect(fil);fil.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.08);s.start();}
+}
+function soundAnimal(type){
+  const ctx=gCtx();
+  if(type==='dog'){[[280,0,.07,.4],[260,.09,.1,.35],[280,.28,.07,.4],[260,.37,.1,.35]].forEach(([f,t,d,v])=>tone(f,'square',t,d,v));return;}
+  if(type==='cat'){
+    [0,400].forEach(delay=>{setTimeout(()=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.setValueAtTime(700,ctx.currentTime);o.frequency.linearRampToValueAtTime(900,ctx.currentTime+.12);o.frequency.linearRampToValueAtTime(600,ctx.currentTime+.28);g.gain.setValueAtTime(.28,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.32);o.start();o.stop(ctx.currentTime+.35);},delay);});return;
+  }
+  if(type==='duck'){[[600,0,.05,.35],[700,.07,.04,.3],[600,.22,.05,.35],[700,.28,.04,.3]].forEach(([f,t,d,v])=>tone(f,'sawtooth',t,d,v));return;}
+  if(type==='cow'){const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sawtooth';o.frequency.setValueAtTime(180,ctx.currentTime);o.frequency.linearRampToValueAtTime(150,ctx.currentTime+.8);g.gain.setValueAtTime(.28,ctx.currentTime+.05);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+1);o.start();o.stop(ctx.currentTime+1.05);return;}
+}
+function startBg(){
+  if(!musicOn)return;
+  const ns=[523,587,659,698,784,698,659,587,523,494,523,0],dur=0.3;
+  function loop(){if(!musicOn)return;ns.forEach((f,i)=>{if(!f)return;tone(f,'sine',i*dur,dur*.8,.055);});bgT=setTimeout(loop,ns.length*dur*1000);}
+  loop();
+}
+function stopBg(){clearTimeout(bgT);}
+function toggleMusic(){musicOn=!musicOn;document.querySelectorAll('#btn-music,#btn-music2').forEach(b=>b.textContent=musicOn?'🎵':'🔇');if(musicOn)startBg();else stopBg();}
+document.addEventListener('touchstart',function i(){document.removeEventListener('touchstart',i);startBg();},{once:true});
+document.addEventListener('click',function i(){document.removeEventListener('click',i);startBg();},{once:true});
+
+// ── NAVIGATION ──────────────────────────────────────────────
+let totalStars=0,grafiaStars=0,parolaStars=0;
+function goHome(){showScreen('home');if(musicOn)startBg();setBubble('home','CIAO! SONO LUMI! 🦄<br>SCEGLI UN MONDO MAGICO!');}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function updateStars(){document.getElementById('total-stars').textContent=totalStars;document.getElementById('grafia-stars').textContent=grafiaStars;document.getElementById('parola-stars').textContent=parolaStars;}
+function bounce(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('bounce');void el.offsetWidth;el.classList.add('bounce');}
+function setBubble(id,txt){const el=document.getElementById('bubble-'+id);if(el)el.innerHTML=txt;}
+
+function openWorld(w){
+  if(w==='suona'){stopBg();}else{if(musicOn)startBg();}
+  if(w==='colora'){initColora();showScreen('colora-screen');bounce('lumi-colora');}
+  else if(w==='suona'){initSuona();showScreen('suona-screen');bounce('lumi-suona');}
+  else if(w==='parola'){initParola();showScreen('parola-screen');bounce('lumi-parola');}
+  else if(w==='grafia-lettere'){initGrafia('lettere');showScreen('grafia-screen');}
+  else if(w==='grafia-numeri'){initGrafia('numeri');showScreen('grafia-screen');}
+}
+
+// ── CELEBRATION ──────────────────────────────────────────────
+let celCb=null;
+function showCelebration(msg,sub,cb){
+  celCb=cb||null;
+  document.getElementById('cel-stars').textContent=totalStars>=20?'⭐⭐⭐':totalStars>=10?'⭐⭐':'⭐';
+  document.getElementById('cel-msg').textContent=msg;
+  document.getElementById('cel-sub').textContent=sub||'';
+  document.getElementById('celebration').classList.add('show');
+  launchConfetti();soundCorrect();
+}
+function closeCelebration(){document.getElementById('celebration').classList.remove('show');if(celCb)celCb();}
+function launchConfetti(){
+  const c=document.getElementById('confetti-c'),ctx=c.getContext('2d');
+  c.width=window.innerWidth;c.height=window.innerHeight;
+  const cols=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF6FC8','#A855F7'],ps=[];
+  for(let i=0;i<100;i++)ps.push({x:Math.random()*c.width,y:-20,r:Math.random()*10+5,col:cols[~~(Math.random()*cols.length)],sp:Math.random()*5+2,rot:Math.random()*360,rs:Math.random()*7-3});
+  let f=0;(function draw(){ctx.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.y+=p.sp;p.rot+=p.rs;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.col;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);ctx.restore();});if(++f<110)requestAnimationFrame(draw);else ctx.clearRect(0,0,c.width,c.height);})();
+}
+
+// ── COLORA ──────────────────────────────────────────────────
+let drawCtx,painting=false,brushColor='#FF6B6B',brushSize=10;
+const COLORS=['#FF6B6B','#FF6FC8','#FFD93D','#6BCB77','#4D96FF','#A855F7','#FF8C00','#8B4513','#000000','#ffffff'];
+function initColora(){
+  const canvas=document.getElementById('drawing-canvas');
+  const W=Math.min(window.innerWidth-32,640),H=Math.round(W*0.52);
+  canvas.width=W;canvas.height=H;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  drawCtx=canvas.getContext('2d');drawCtx.fillStyle='#fff';drawCtx.fillRect(0,0,W,H);
+  drawCtx.lineCap='round';drawCtx.lineJoin='round';
+  const pal=document.getElementById('color-palette');pal.innerHTML='';
+  COLORS.forEach((c,idx)=>{const sw=document.createElement('button');sw.className='color-swatch';sw.style.background=c;if(c==='#ffffff')sw.style.border='4px solid #ccc';sw.onclick=()=>{brushColor=c;document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('active'));sw.classList.add('active');};pal.appendChild(sw);if(idx===0)sw.classList.add('active');});
+  const nc=canvas.cloneNode(false);canvas.parentNode.replaceChild(nc,canvas);
+  const c2=document.getElementById('drawing-canvas');drawCtx=c2.getContext('2d');drawCtx.fillStyle='#fff';drawCtx.fillRect(0,0,W,H);drawCtx.lineCap='round';drawCtx.lineJoin='round';
+  c2.addEventListener('touchstart',e=>{e.preventDefault();painting=true;const t=e.touches[0],r=c2.getBoundingClientRect();drawCtx.beginPath();drawCtx.moveTo(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+  c2.addEventListener('touchmove',e=>{e.preventDefault();if(!painting)return;const t=e.touches[0],r=c2.getBoundingClientRect();drawCtx.strokeStyle=brushColor;drawCtx.lineWidth=brushSize;drawCtx.lineTo(t.clientX-r.left,t.clientY-r.top);drawCtx.stroke();},{passive:false});
+  c2.addEventListener('touchend',()=>{painting=false;});
+  c2.addEventListener('mousedown',e=>{painting=true;const r=c2.getBoundingClientRect();drawCtx.beginPath();drawCtx.moveTo(e.clientX-r.left,e.clientY-r.top);});
+  c2.addEventListener('mousemove',e=>{if(!painting)return;const r=c2.getBoundingClientRect();drawCtx.strokeStyle=brushColor;drawCtx.lineWidth=brushSize;drawCtx.lineTo(e.clientX-r.left,e.clientY-r.top);drawCtx.stroke();});
+  c2.addEventListener('mouseup',()=>{painting=false;});
+}
+function clearCanvas(){const c=document.getElementById('drawing-canvas');if(drawCtx){drawCtx.fillStyle='#fff';drawCtx.fillRect(0,0,c.width,c.height);}}
+function setBrushSize(s){brushSize=s;}
+
+// ── SUONA ──────────────────────────────────────────────────
+const KEYS=[{note:'DO',freq:262,color:'#FF6B6B'},{note:'RE',freq:294,color:'#FF8C00'},{note:'MI',freq:330,color:'#FFD93D'},{note:'FA',freq:349,color:'#6BCB77'},{note:'SOL',freq:392,color:'#4D96FF'},{note:'LA',freq:440,color:'#A855F7'},{note:'SI',freq:494,color:'#FF6FC8'},{note:'DO²',freq:523,color:'#FF6B6B'}];
+const ANIMALS=[{e:'🐱',t:'cat',l:'MIAO'},{e:'🐶',t:'dog',l:'BAU'},{e:'🦆',t:'duck',l:'QUACK'},{e:'🐮',t:'cow',l:'MUU'}];
+const INSTRS=[{e:'🥁',t:'kick',l:'GRANCASSA'},{e:'🪘',t:'snare',l:'RULLANTE'},{e:'🎩',t:'hat',l:'PIATTO'}];
+function initSuona(){
+  const pk=document.getElementById('piano-keys');pk.innerHTML='';
+  KEYS.forEach(k=>{const btn=document.createElement('button');btn.className='piano-key';btn.style.background=k.color;btn.innerHTML=`<span style="font-size:26px">♪</span><span class="note-lbl">${k.note}</span>`;btn.addEventListener('touchstart',e=>{e.preventDefault();soundKey(k.freq);bounce('lumi-suona');setBubble('suona',`♪ ${k.note}! 🎵`);},{passive:false});btn.addEventListener('mousedown',()=>{soundKey(k.freq);bounce('lumi-suona');});pk.appendChild(btn);});
+  const ab=document.getElementById('animal-btns');ab.innerHTML='';
+  ANIMALS.forEach(a=>{const btn=document.createElement('button');btn.className='animal-key';btn.innerHTML=`<span style="font-size:42px">${a.e}</span>`;btn.addEventListener('touchstart',e=>{e.preventDefault();soundAnimal(a.t);bounce('lumi-suona');setBubble('suona',`${a.e} FA ${a.l}! 🎤`);},{passive:false});btn.addEventListener('mousedown',()=>{soundAnimal(a.t);bounce('lumi-suona');});ab.appendChild(btn);});
+  const ib=document.getElementById('instr-btns');ib.innerHTML='';
+  INSTRS.forEach(i=>{const btn=document.createElement('button');btn.className='instr-key';btn.innerHTML=`<span style="font-size:36px">${i.e}</span>`;btn.addEventListener('touchstart',e=>{e.preventDefault();soundDrum(i.t);bounce('lumi-suona');setBubble('suona',`${i.e} ${i.l}! 🥁`);},{passive:false});btn.addEventListener('mousedown',()=>{soundDrum(i.t);bounce('lumi-suona');});ib.appendChild(btn);});
+}
+
+// ── SCRIVI LA PAROLA ──────────────────────────────────────────────
+// ordinate per lunghezza crescente
+const PAROLE=['ZIO','ZIA','CIAO','PAPÀ','CASA','PAPPA','ACQUA','LETTO','NONNO','NONNA','SEDIA','PARCO','MAMMA','LIBRO','AEREO','TAVOLO','VASINO','SCARPE','ALBERO','MATTIA','LORENZO','SCUOLA','BAGNETTO','MAESTRA','ANIMALI','PIGIAMA','MACCHINA','PASSEGGINO','BICICLETTA'];
+let parolaIdx=0,parolaLevel=1,parolaCtx=null,parolaDrawing=false;
+
+function initParola(){parolaIdx=0;parolaLevel=1;parolaStars=0;updateStars();renderParola();}
+
+function renderParola(){
+  const word=PAROLE[parolaIdx];
+  document.getElementById('parola-display').textContent=word;
+  document.getElementById('parola-counter').textContent=`PAROLA ${parolaIdx+1} DI ${PAROLE.length}`;
+  const badge=document.getElementById('parola-level-badge');
+  const label=document.getElementById('parola-canvas-label');
+  if(parolaLevel===1){
+    badge.textContent='LIVELLO 1 — CON GUIDA ✏️';badge.style.background='#FFD93D';
+    label.textContent='SCRIVI QUI SOPRA LA PAROLA TRATTEGGIATA';
+    setBubble('parola',`SEGUI LA PAROLA TRATTEGGIATA CON IL DITO! ✏️`);
+  } else {
+    badge.textContent='LIVELLO 2 — DA SOLO! 🌟';badge.style.background='#6BCB77';
+    label.textContent='SCRIVI QUI LA PAROLA DA SOLO!';
+    setBubble('parola',`ORA SCRIVI "${word}" DA SOLO! SEI BRAVO! 🌟`);
+  }
+  bounce('lumi-parola');
+  setupParolaCanvas(word);
+}
+
+function setupParolaCanvas(word){
+  const canvas=document.getElementById('parola-canvas');
+  const W=Math.min(window.innerWidth-60,700);
+  const charW=Math.min(60,W/Math.max(word.length,3));
+  const H=Math.round(charW*1.8);
+  canvas.width=W;canvas.height=H;canvas.style.width=W+'px';canvas.style.height=H+'px';
+
+  // rimpiazza canvas per rimuovere listener
+  const nc=canvas.cloneNode(false);canvas.parentNode.replaceChild(nc,canvas);
+  const c2=document.getElementById('parola-canvas');
+  parolaCtx=c2.getContext('2d');
+  parolaCtx.fillStyle='#f8f8ff';parolaCtx.fillRect(0,0,W,H);
+
+  // disegna parola guida livello 1
+  if(parolaLevel===1){
+    const fs=Math.min(Math.round(H*0.72),charW*1.4);
+    parolaCtx.font=`900 ${fs}px Arial Black, Arial`;
+    parolaCtx.textAlign='center';parolaCtx.textBaseline='middle';
+    // sfondo opaco
+    parolaCtx.fillStyle='rgba(77,150,255,0.12)';
+    parolaCtx.fillText(word,W/2,H/2);
+    // bordo tratteggiato
+    parolaCtx.setLineDash([5,4]);
+    parolaCtx.strokeStyle='rgba(77,150,255,0.4)';
+    parolaCtx.lineWidth=1.5;
+    parolaCtx.strokeText(word,W/2,H/2);
+    parolaCtx.setLineDash([]);
+  }
+
+  // setup disegno a mano libera sopra
+  parolaCtx.lineCap='round';parolaCtx.lineJoin='round';
+  parolaCtx.strokeStyle='#1a1a1a';parolaCtx.lineWidth=Math.max(8,charW*0.18);
+  parolaDrawing=false;
+
+  c2.addEventListener('touchstart',e=>{e.preventDefault();parolaDrawing=true;const t=e.touches[0],r=c2.getBoundingClientRect();parolaCtx.beginPath();parolaCtx.moveTo(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+  c2.addEventListener('touchmove',e=>{e.preventDefault();if(!parolaDrawing)return;const t=e.touches[0],r=c2.getBoundingClientRect();parolaCtx.lineTo(t.clientX-r.left,t.clientY-r.top);parolaCtx.stroke();},{passive:false});
+  c2.addEventListener('touchend',()=>{parolaDrawing=false;});
+  c2.addEventListener('mousedown',e=>{parolaDrawing=true;const r=c2.getBoundingClientRect();parolaCtx.beginPath();parolaCtx.moveTo(e.clientX-r.left,e.clientY-r.top);});
+  c2.addEventListener('mousemove',e=>{if(!parolaDrawing)return;const r=c2.getBoundingClientRect();parolaCtx.lineTo(e.clientX-r.left,e.clientY-r.top);parolaCtx.stroke();});
+  c2.addEventListener('mouseup',()=>{parolaDrawing=false;});
+}
+
+function parolaClear(){setupParolaCanvas(PAROLE[parolaIdx]);}
+
+function parolaNext(){
+  soundCorrect();parolaStars++;totalStars++;updateStars();bounce('lumi-parola');
+  if(parolaLevel===1){
+    parolaLevel=2;renderParola();
+    setBubble('parola','OTTIMO! ORA PROVA SENZA GUIDA! 🌟');
+  } else {
+    parolaLevel=1;parolaIdx++;
+    if(parolaIdx>=PAROLE.length){
+      showCelebration('HAI SCRITTO TUTTE LE PAROLE! 🏆',`STELLE TOTALI: ${totalStars} ⭐`,()=>{parolaIdx=0;parolaLevel=1;renderParola();});
+    } else {
+      renderParola();setBubble('parola','FANTASTICO! PROSSIMA PAROLA! 🎉');
+    }
+  }
+}
+
+function parolaBack(){
+  if(parolaLevel===2){parolaLevel=1;renderParola();}
+  else if(parolaIdx>0){parolaIdx--;parolaLevel=1;renderParola();}
+}
+
+// ── GRAFIA LETTERE / NUMERI ──────────────────────────────────────────────
+const LETTERE='ABCDEFGHILMNOPQRSTUVZ'.split('');
+const NUMERI=['0','1','2','3','4','5','6','7','8','9','10'];
+let grafiaMode='lettere',grafiaIdx=0,grafiaLevel=1,grafiaCtx=null,grafiaDrawing=false;
+
+function initGrafia(mode){
+  grafiaMode=mode;grafiaIdx=0;grafiaLevel=1;grafiaStars=0;updateStars();
+  document.getElementById('grafia-title').textContent=mode==='lettere'?'✏️ SCRIVI LE LETTERE!':'🔢 SCRIVI I NUMERI!';
+  renderGrafia();
+}
+
+function renderGrafia(){
+  const list=grafiaMode==='lettere'?LETTERE:NUMERI;
+  const cur=list[grafiaIdx]||list[0];
+  document.getElementById('grafia-example').textContent=cur;
+  const badge=document.getElementById('grafia-level-badge');
+  badge.textContent=grafiaLevel===1?'LIVELLO 1 — CON GUIDA ✏️':'LIVELLO 2 — SENZA GUIDA 🌟';
+  badge.style.background=grafiaLevel===1?'#FFD93D':'#6BCB77';
+  setBubble('grafia',grafiaLevel===1?`SEGUI LA ${cur} TRATTEGGIATA! ✏️`:`SCRIVI LA ${cur} DA SOLO! 🌟`);
+  bounce('lumi-grafia');
+  setupGrafiaCanvas(cur);
+}
+
+function setupGrafiaCanvas(letter){
+  const canvas=document.getElementById('grafia-canvas');
+  const sz=Math.min(Math.round(window.innerWidth*0.42),220);
+  canvas.width=sz;canvas.height=sz;canvas.style.width=sz+'px';canvas.style.height=sz+'px';
+  const nc=canvas.cloneNode(false);canvas.parentNode.replaceChild(nc,canvas);
+  const c2=document.getElementById('grafia-canvas');
+  grafiaCtx=c2.getContext('2d');
+  grafiaCtx.fillStyle='#fff';grafiaCtx.fillRect(0,0,sz,sz);
+  if(grafiaLevel===1){
+    grafiaCtx.font=`900 ${sz*0.72}px Arial Black, Arial`;
+    grafiaCtx.textAlign='center';grafiaCtx.textBaseline='middle';
+    grafiaCtx.fillStyle='rgba(255,215,0,0.2)';grafiaCtx.fillText(letter,sz/2,sz/2);
+    grafiaCtx.setLineDash([6,5]);grafiaCtx.strokeStyle='rgba(200,150,0,0.4)';grafiaCtx.lineWidth=2;grafiaCtx.strokeText(letter,sz/2,sz/2);grafiaCtx.setLineDash([]);
+  }
+  grafiaCtx.lineCap='round';grafiaCtx.lineJoin='round';grafiaCtx.strokeStyle='#222';grafiaCtx.lineWidth=11;
+  grafiaDrawing=false;
+  c2.addEventListener('touchstart',e=>{e.preventDefault();grafiaDrawing=true;const t=e.touches[0],r=c2.getBoundingClientRect();grafiaCtx.beginPath();grafiaCtx.moveTo(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+  c2.addEventListener('touchmove',e=>{e.preventDefault();if(!grafiaDrawing)return;const t=e.touches[0],r=c2.getBoundingClientRect();grafiaCtx.lineTo(t.clientX-r.left,t.clientY-r.top);grafiaCtx.stroke();},{passive:false});
+  c2.addEventListener('touchend',()=>{grafiaDrawing=false;});
+  c2.addEventListener('mousedown',e=>{grafiaDrawing=true;const r=c2.getBoundingClientRect();grafiaCtx.beginPath();grafiaCtx.moveTo(e.clientX-r.left,e.clientY-r.top);});
+  c2.addEventListener('mousemove',e=>{if(!grafiaDrawing)return;const r=c2.getBoundingClientRect();grafiaCtx.lineTo(e.clientX-r.left,e.clientY-r.top);grafiaCtx.stroke();});
+  c2.addEventListener('mouseup',()=>{grafiaDrawing=false;});
+}
+
+function grafiaClear(){const list=grafiaMode==='lettere'?LETTERE:NUMERI;setupGrafiaCanvas(list[grafiaIdx]);}
+function grafiaNext(){
+  const list=grafiaMode==='lettere'?LETTERE:NUMERI;
+  soundCorrect();grafiaStars++;totalStars++;updateStars();bounce('lumi-grafia');
+  if(grafiaLevel===1){grafiaLevel=2;renderGrafia();setBubble('grafia','BRAVISSIMO! ORA SENZA GUIDA! 🌟');}
+  else{grafiaLevel=1;grafiaIdx++;
+    if(grafiaIdx>=list.length){showCelebration('HAI FINITO TUTTO! SEI UN CAMPIONE! 🏆',`STELLE TOTALI: ${totalStars} ⭐`,()=>{grafiaIdx=0;grafiaLevel=1;renderGrafia();});}
+    else{renderGrafia();setBubble('grafia','PERFETTO! PROSSIMA! 🎉');}
+  }
+}
+function grafiaBack(){
+  if(grafiaLevel===2){grafiaLevel=1;renderGrafia();}
+  else if(grafiaIdx>0){grafiaIdx--;grafiaLevel=1;renderGrafia();}
+}
+</script>
+</body>
+</html>
